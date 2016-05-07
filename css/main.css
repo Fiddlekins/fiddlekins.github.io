@@ -1,0 +1,16 @@
+body {
+    background-color: black;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#canvas-terminal {
+    width: 800px;
+    height: 600px;
+    border: white 1px solid;
+}
