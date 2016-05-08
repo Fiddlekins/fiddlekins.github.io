@@ -45,32 +45,11 @@ terminal.content = {};
 terminal.content.pushLine = function(line){
 	terminal.content.lines.push(line);
 };
+terminal.content.concatLines = function(lines){
+	terminal.content.lines = terminal.content.lines.concat(lines);
+};
 terminal.content.lines = [
-	'Welcome to the lair of the Fiddlekins.',
-	'<!DOCTYPE html>',
-	'<html lang="en">',
-	'<head>',
-	'<meta charset="UTF-8">',
-	'<title>This is where the Fiddles lives</title>',
-	'<link rel="stylesheet" type="text/css" href="css/main.css">',
-	'</head>',
-	'<body>',
-	'<canvas id="canvas-terminal"></canvas>',
-	'</body>',
-	'<script src="js/terminal.js"></script>',
-	'<script src="js/inputController.js"></script>',
-	'<script src="js/inputHandler.js"></script>',
-	'<script src="js/main.js"></script>',
-	'</html>',
-	'<html lang="en">',
-	'<head>',
-	'<meta charset="UTF-8">',
-	'<title>This is where the Fiddles lives</title>',
-	'<link rel="stylesheet" type="text/css" href="css/main.css">',
-	'</head>',
-	'<body>',
-	'<canvas id="canvas-terminal"></canvas>',
-	'</body>'
+	'Welcome to the lair of the Fiddlekins.'
 ];
 
 terminal.isDirty = false;
@@ -100,7 +79,7 @@ terminal.draw = function(){
 		// Reverse iteration so that the most recently pushed line is displayed at the bottom
 		for (var lineIndex = terminal.content.lines.length; lineIndex >= 0; lineIndex--) {
 			var isInputLine = lineIndex === terminal.content.lines.length;
-			var line = isInputLine ? terminal.inputController.currentInput : terminal.content.lines[lineIndex];
+			var line = isInputLine ? terminal.inputController.currentInputString : terminal.content.lines[lineIndex];
 			var chunkTotal = Math.max(Math.ceil(line.length / terminal.charsPerLine), 1);
 
 			rowIndex += chunkTotal;

@@ -32,7 +32,7 @@ terminal.inputController.caret.draw = function(ctx){
 		ctx.fillStyle = terminal.inputController.caret.fillStyle;
 		ctx.globalCompositeOperation = 'difference';
 		ctx.fillRect(
-			terminal.textOffsetX + terminal.characterWidth * terminal.inputController.caret.position,
+			terminal.textOffsetX + terminal.characterWidth * (terminal.inputController.caret.position + terminal.inputHandler.currentDirectoryString.length),
 			ctx.canvas.height - terminal.textOffsetY,
 			terminal.characterWidth,
 			-3
@@ -43,6 +43,11 @@ terminal.inputController.caret.draw = function(ctx){
 };
 
 terminal.inputController.currentInput = '';
+terminal.inputController.currentInputString = '';
+terminal.inputController.updateCurrentInputString = function(){
+	terminal.inputController.currentInputString = terminal.inputHandler.currentDirectoryString + terminal.inputController.currentInput;
+};
+
 terminal.inputController.ignoreCharcodesOnKeypress = [
 	'Enter'
 ];
@@ -62,6 +67,7 @@ terminal.inputController.currentInputInsert = function(string){
 		terminal.inputController.caret.position
 	);
 	terminal.inputController.caret.position++;
+	terminal.inputController.updateCurrentInputString();
 };
 
 terminal.inputController.currentInputRemoveChar = function(position){
@@ -70,6 +76,7 @@ terminal.inputController.currentInputRemoveChar = function(position){
 		position,
 		1
 	);
+	terminal.inputController.updateCurrentInputString();
 };
 
 window.addEventListener('keypress', function(e){
@@ -89,6 +96,7 @@ window.addEventListener('keydown', function(e){
 			terminal.inputController.currentInput = '';
 			terminal.inputController.caret.setPosition(0);
 			terminal.isDirty = true;
+			terminal.inputController.updateCurrentInputString();
 			break;
 		case 'Backspace':
 			if (terminal.inputController.caret.position > 0) {
