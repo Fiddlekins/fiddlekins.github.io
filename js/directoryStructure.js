@@ -111,7 +111,7 @@ terminal.directoryStructure.file = function(name, parent){
 terminal.directoryStructure.file.prototype.execute = function(args){
 	switch (this._type) {
 		case 'exe':
-			document.location.href = document.URL + '/' + this._fileName;
+			document.location.href = document.URL + (/\/$/.test(document.URL) ? '' : '/') + this._fileName;
 			return ['Initialising ' + this._name];
 	}
 };
