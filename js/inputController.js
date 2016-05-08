@@ -79,6 +79,10 @@ terminal.inputController.currentInputRemoveChar = function(position){
 	terminal.inputController.updateCurrentInputString();
 };
 
+terminal.inputController.history = {};
+terminal.inputController.history.log = [];
+terminal.inputController.history.index = -1;
+
 window.addEventListener('keypress', function(e){
 	if (terminal.inputController.ignoreCharcodesOnKeypress.indexOf(e.code) === -1) {
 		terminal.inputController.currentInputInsert(e.key || String.fromCharCode(e.keyCode));
@@ -92,6 +96,8 @@ window.addEventListener('keydown', function(e){
 	var shouldPreventDefault = true;
 	switch (e.code) {
 		case 'Enter':
+			terminal.inputController.history.log.push(terminal.inputController.currentInput);
+			terminal.inputController.history.index = -1;
 			terminal.inputHandler.process(terminal.inputController.currentInput);
 			terminal.inputController.currentInput = '';
 			terminal.inputController.caret.setPosition(0);
@@ -113,8 +119,28 @@ window.addEventListener('keydown', function(e){
 			terminal.inputController.caret.setBlinkOn();
 			break;
 		case 'ArrowDown':
+			if (terminal.inputController.history.log.length) {
+				if (terminal.inputController.history.index === -1) {
+					terminal.inputController.history.index = terminal.inputController.history.log.length;
+				}
+				terminal.inputController.history.index = Math.min(terminal.inputController.history.index + 1, terminal.inputController.history.log.length - 1);
+				terminal.inputController.currentInput = terminal.inputController.history.log[terminal.inputController.history.index];
+				terminal.inputController.caret.setPosition(terminal.inputController.currentInput.length);
+				terminal.inputController.updateCurrentInputString();
+				terminal.isDirty = true;
+			}
 			break;
 		case 'ArrowUp':
+			if (terminal.inputController.history.log.length) {
+				if (terminal.inputController.history.index === -1) {
+					terminal.inputController.history.index = terminal.inputController.history.log.length;
+				}
+				terminal.inputController.history.index = Math.max(terminal.inputController.history.index - 1, 0);
+				terminal.inputController.currentInput = terminal.inputController.history.log[terminal.inputController.history.index];
+				terminal.inputController.caret.setPosition(terminal.inputController.currentInput.length);
+				terminal.inputController.updateCurrentInputString();
+				terminal.isDirty = true;
+			}
 			break;
 		case 'Delete':
 			terminal.inputController.currentInputRemoveChar(terminal.inputController.caret.position);
