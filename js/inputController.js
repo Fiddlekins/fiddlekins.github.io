@@ -33,7 +33,7 @@ terminal.inputController.caret.draw = function(ctx){
 		ctx.globalCompositeOperation = 'difference';
 		ctx.fillRect(
 			terminal.textOffsetX + terminal.characterWidth * terminal.inputController.caret.position,
-			terminal.canvas.height - terminal.textOffsetY,
+			ctx.canvas.height - terminal.textOffsetY,
 			terminal.characterWidth,
 			-3
 		);
@@ -74,13 +74,15 @@ terminal.inputController.currentInputRemoveChar = function(position){
 
 window.addEventListener('keypress', function(e){
 	if (terminal.inputController.ignoreCharcodesOnKeypress.indexOf(e.code) === -1) {
-		terminal.inputController.currentInputInsert(String.fromCharCode(e.keyCode));
+		terminal.inputController.currentInputInsert(e.key || String.fromCharCode(e.keyCode));
 		terminal.inputController.caret.setBlinkOff();
 		terminal.isDirty = true;
+		e.preventDefault();
 	}
 });
 
 window.addEventListener('keydown', function(e){
+	var shouldPreventDefault = true;
 	switch (e.code) {
 		case 'Enter':
 			terminal.inputHandler.process(terminal.inputController.currentInput);
@@ -89,8 +91,10 @@ window.addEventListener('keydown', function(e){
 			terminal.isDirty = true;
 			break;
 		case 'Backspace':
-			terminal.inputController.currentInputRemoveChar(terminal.inputController.caret.position - 1);
-			terminal.inputController.caret.setPosition(terminal.inputController.caret.position - 1);
+			if (terminal.inputController.caret.position > 0) {
+				terminal.inputController.currentInputRemoveChar(terminal.inputController.caret.position - 1);
+				terminal.inputController.caret.setPosition(terminal.inputController.caret.position - 1);
+			}
 			break;
 		case 'ArrowLeft':
 			terminal.inputController.caret.setPosition(terminal.inputController.caret.position - 1);
@@ -120,5 +124,10 @@ window.addEventListener('keydown', function(e){
 			break;
 		case 'PageDown':
 			break;
+		default:
+			shouldPreventDefault = false;
+	}
+	if (shouldPreventDefault) {
+		e.preventDefault();
 	}
 });

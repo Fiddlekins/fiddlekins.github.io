@@ -1,36 +1,80 @@
 'use strict';
 
 var terminal = {
-	canvas: document.getElementById('canvas-terminal')
+	canvasOutput: document.getElementById('canvas-terminal'),
+	canvasGlitchInput: document.createElement('canvas')
 };
 
-terminal.canvas.width = 800;
-terminal.canvas.height = 600;
+terminal.ctxOutput = terminal.canvasOutput.getContext('2d');
+terminal.ctxGlitchInput = terminal.canvasGlitchInput.getContext('2d');
 
-terminal.ctx = terminal.canvas.getContext('2d');
-
-terminal.fontSize = 20;
-terminal.ctx.font = terminal.fontSize + 'px monospace';
-terminal.ctx.fillStyle = 'rgb(255,255,255)';
-terminal.ctx.textBaseline = 'bottom';
+terminal.ctxOutput.imageSmoothingEnabled = false;
+terminal.ctxGlitchInput.imageSmoothingEnabled = false;
 
 // Manually divined numbers
 terminal.textOffsetX = 15;
 terminal.textOffsetY = 12;
 
-terminal.characterWidth = terminal.ctx.measureText(' ').width;
-terminal.charsPerLine = Math.floor((terminal.canvas.width - terminal.textOffsetX * 2) / terminal.characterWidth);
-terminal.rowHeight = terminal.fontSize;
+terminal.setCanvasSize = function(){
+	var viewWidth = parseInt(window.getComputedStyle(terminal.canvasOutput).width);
+	var viewHeight = parseInt(window.getComputedStyle(terminal.canvasOutput).height);
+	var ratio = viewHeight / viewWidth;
+
+	var width = viewWidth > 800 ? 800 : viewWidth;
+	var height = Math.round(ratio * width);
+
+	terminal.canvasOutput.width = width;
+	terminal.canvasOutput.height = height;
+	terminal.canvasGlitchInput.width = width;
+	terminal.canvasGlitchInput.height = height;
+
+	terminal.fontSize = Math.max(width / 40, 10); // Gives a max fontSize of 20, then scales it until it goes below the min fontSize 10
+	terminal.ctxGlitchInput.font = terminal.fontSize + 'px Consolas';
+	terminal.ctxGlitchInput.fillStyle = 'rgb(255,255,255)';
+	terminal.ctxGlitchInput.textBaseline = 'bottom';
+
+	terminal.characterWidth = terminal.ctxGlitchInput.measureText(' ').width;
+	terminal.charsPerLine = Math.floor((terminal.canvasOutput.width - terminal.textOffsetX * 2) / terminal.characterWidth);
+	terminal.rowHeight = terminal.fontSize;
+
+	terminal.isDirty = true;
+};
+window.addEventListener('resize', terminal.setCanvasSize);
 
 terminal.content = {};
 terminal.content.pushLine = function(line){
 	terminal.content.lines.push(line);
 };
 terminal.content.lines = [
-	'Welcome to the lair of the Fiddlekins.'
+	'Welcome to the lair of the Fiddlekins.',
+	'<!DOCTYPE html>',
+	'<html lang="en">',
+	'<head>',
+	'<meta charset="UTF-8">',
+	'<title>This is where the Fiddles lives</title>',
+	'<link rel="stylesheet" type="text/css" href="css/main.css">',
+	'</head>',
+	'<body>',
+	'<canvas id="canvas-terminal"></canvas>',
+	'</body>',
+	'<script src="js/terminal.js"></script>',
+	'<script src="js/inputController.js"></script>',
+	'<script src="js/inputHandler.js"></script>',
+	'<script src="js/main.js"></script>',
+	'</html>',
+	'<html lang="en">',
+	'<head>',
+	'<meta charset="UTF-8">',
+	'<title>This is where the Fiddles lives</title>',
+	'<link rel="stylesheet" type="text/css" href="css/main.css">',
+	'</head>',
+	'<body>',
+	'<canvas id="canvas-terminal"></canvas>',
+	'</body>'
 ];
 
 terminal.isDirty = false;
+terminal.isGlitch = false;
 
 terminal.previousTimeElapsed = 0;
 
@@ -42,14 +86,14 @@ terminal.updateRoot = function(timeElapsed){
 
 terminal.update = function(timeDelta, timeElapsed){
 	terminal.inputController.caret.update(timeDelta);
+	terminal.glitch.update(timeDelta);
 	terminal.draw();
 };
 
 terminal.draw = function(){
 	if (terminal.isDirty) {
-		terminal.isDirty = false;
 
-		terminal.ctx.clearRect(0, 0, terminal.canvas.width, terminal.canvas.height);
+		terminal.ctxGlitchInput.clearRect(0, 0, terminal.canvasGlitchInput.width, terminal.canvasGlitchInput.height);
 
 		var rowIndex = 0;
 
@@ -63,16 +107,23 @@ terminal.draw = function(){
 
 			for (var chunkIndex = 0; chunkIndex < chunkTotal; chunkIndex++) {
 				rowIndex--;
-				terminal.ctx.fillText(
+				terminal.ctxGlitchInput.fillText(
 					line.slice(chunkIndex * terminal.charsPerLine, (chunkIndex + 1) * terminal.charsPerLine),
 					terminal.textOffsetX,
-					terminal.canvas.height - ( terminal.textOffsetY + terminal.rowHeight * rowIndex)
+					terminal.canvasGlitchInput.height - ( terminal.textOffsetY + terminal.rowHeight * rowIndex)
 				);
 			}
 
 			rowIndex += chunkTotal;
 		}
 
-		terminal.inputController.caret.draw(terminal.ctx);
+		terminal.inputController.caret.draw(terminal.ctxGlitchInput);
+
+		terminal.glitch.updateInputImageData();
 	}
+	if (terminal.isGlitch || terminal.isDirty) {
+		terminal.glitch.draw();
+	}
+	terminal.isDirty = false;
+	terminal.isGlitch = false;
 };
