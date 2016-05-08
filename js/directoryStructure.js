@@ -102,9 +102,9 @@ terminal.directoryStructure.folder.prototype.getChild = function(name){
 
 terminal.directoryStructure.file = function(name, parent){
 	this._name = name;
-	var extensionMatch = name.match(/.*\.(.+$)/);
-	this._fileName = extensionMatch ? extensionMatch[0] : name;
-	this._type = extensionMatch ? extensionMatch[1] : null;
+	var extensionMatch = name.match(/(.*)\.(.+$)/);
+	this._fileName = extensionMatch ? extensionMatch[1] : name;
+	this._type = extensionMatch ? extensionMatch[2] : null;
 	this._parent = parent;
 };
 
