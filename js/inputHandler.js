@@ -11,7 +11,9 @@ terminal.inputHandler.updateCurrentDirectoryString = function(){
 terminal.inputHandler.process = function(string){
 	terminal.content.pushLine(terminal.inputController.currentInputString);
 	var args, target;
-	if (/^cd( |$)/i.test(string)) {
+	if (/^ *$/.test(string)) {
+		// Do nothing
+	} else if (/^cd( |$)/i.test(string)) {
 		args = string.slice(3);
 		if (/^ *$/.test(args)) {
 			terminal.content.pushLine(terminal.inputHandler.currentDirectoryString.slice(0, terminal.inputHandler.currentDirectoryString.length - 1));
