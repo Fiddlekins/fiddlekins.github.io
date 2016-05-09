@@ -46,6 +46,7 @@ terminal.inputController.currentInput = '';
 terminal.inputController.currentInputString = '';
 terminal.inputController.updateCurrentInputString = function(){
 	terminal.inputController.currentInputString = terminal.inputHandler.currentDirectoryString + terminal.inputController.currentInput;
+	terminal.shouldRefreshFavicon = true;
 };
 
 terminal.inputController.ignoreCharcodesOnKeypress = [

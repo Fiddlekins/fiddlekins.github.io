@@ -2,14 +2,21 @@
 
 var terminal = {
 	canvasOutput: document.getElementById('canvas-terminal'),
-	canvasGlitchInput: document.createElement('canvas')
+	canvasGlitchInput: document.createElement('canvas'),
+	canvasFavicon: document.createElement('canvas'),
+	favicon: document.getElementById('favicon')
 };
+
+terminal.canvasFavicon.width = 8;
+terminal.canvasFavicon.height = 8;
 
 terminal.ctxOutput = terminal.canvasOutput.getContext('2d');
 terminal.ctxGlitchInput = terminal.canvasGlitchInput.getContext('2d');
+terminal.ctxFavicon = terminal.canvasFavicon.getContext('2d');
 
 terminal.ctxOutput.imageSmoothingEnabled = false;
 terminal.ctxGlitchInput.imageSmoothingEnabled = false;
+terminal.ctxFavicon.imageSmoothingEnabled = false;
 
 // Manually divined numbers
 terminal.textOffsetX = 15;
@@ -54,6 +61,7 @@ terminal.content.lines = [
 
 terminal.isDirty = false;
 terminal.isGlitch = false;
+terminal.shouldRefreshFavicon = false;
 
 terminal.previousTimeElapsed = 0;
 
@@ -99,6 +107,26 @@ terminal.draw = function(){
 		terminal.inputController.caret.draw(terminal.ctxGlitchInput);
 
 		terminal.glitch.updateInputImageData();
+	}
+	if (terminal.shouldRefreshFavicon) {
+		terminal.shouldRefreshFavicon = false;
+		terminal.ctxFavicon.fillRect(0, 0, terminal.canvasFavicon.width, terminal.canvasFavicon.height);
+		// This was meant to just make the favicon represent the terminal content, but it's too small a target for the scaling to work decently
+		// So now it just makes an a e s t h e t i c favicon based upon the terminal content
+		for (var count = 2; count > 0; count--) {
+			terminal.ctxFavicon.drawImage(
+				terminal.canvasGlitchInput,
+				0,
+				0,
+				terminal.canvasGlitchInput.height / 2,
+				terminal.canvasGlitchInput.height,
+				0,
+				0,
+				terminal.canvasFavicon.width,
+				terminal.canvasFavicon.height
+			);
+		}
+		terminal.favicon.href = terminal.canvasFavicon.toDataURL();
 	}
 	if (terminal.isGlitch || terminal.isDirty) {
 		terminal.glitch.draw();
