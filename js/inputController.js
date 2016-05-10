@@ -159,12 +159,20 @@ window.addEventListener('keydown', function(e){
 			terminal.inputController.caret.setPosition(terminal.inputController.currentInput.length);
 			break;
 		case 'PageUp':
-			terminal.content.incrementCurrentPageIndex();
+			if (e.ctrlKey || e.altKey) {
+				terminal.content.maximiseCurrentPageIndex();
+			} else {
+				terminal.content.incrementCurrentPageIndex();
+			}
 			terminal.isDirty = true;
 			terminal.shouldRefreshFavicon = true;
 			break;
 		case 'PageDown':
-			terminal.content.decrementCurrentPageIndex();
+			if (e.ctrlKey || e.altKey) {
+				terminal.content.minimiseCurrentPageIndex();
+			} else {
+				terminal.content.decrementCurrentPageIndex();
+			}
 			terminal.isDirty = true;
 			terminal.shouldRefreshFavicon = true;
 			break;
