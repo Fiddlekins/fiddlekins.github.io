@@ -42,23 +42,53 @@ terminal.setCanvasSize = function(){
 
 	terminal.characterWidth = terminal.ctxGlitchInput.measureText(' ').width;
 	terminal.charsPerLine = Math.floor((terminal.canvasOutput.width - terminal.textOffsetX * 2) / terminal.characterWidth);
-	terminal.linesPerScreen = Math.floor((terminal.canvasOutput.height - terminal.textOffsetY) / terminal.fontSize) - 1;
+	terminal.linesPerScreen = Math.floor((terminal.canvasOutput.height - terminal.textOffsetY) / terminal.fontSize);
 	terminal.rowHeight = terminal.fontSize;
 
 	terminal.isDirty = true;
+
+	terminal.content.updateHistoryChunks();
+	terminal.content.updateMaxCurrentPageIndex();
 };
 window.addEventListener('resize', terminal.setCanvasSize);
 
 terminal.content = {};
 terminal.content.currentPageIndex = 0;
-terminal.content.setCurrentPageIndex = function(value){
-	terminal.content.currentPageIndex = Math.max(value, 0);
+terminal.content.historyChunks = 0;
+terminal.content.maxCurrentPageIndex = 0;
+terminal.content.getChunksInLine = function(lineString){
+	return Math.max(Math.ceil(lineString.length / terminal.charsPerLine), 1);
+};
+terminal.content.updateHistoryChunks = function(){
+	terminal.content.historyChunks = 0;
+	for (var lineIndex = 0; lineIndex < terminal.content.lines.length; lineIndex++) {
+		var line = terminal.content.lines[lineIndex];
+		terminal.content.historyChunks += terminal.content.getChunksInLine(line);
+	}
+};
+terminal.content.updateMaxCurrentPageIndex = function(){
+	var chunksInInput = terminal.content.getChunksInLine(terminal.inputController.currentInputString);
+	terminal.content.maxCurrentPageIndex = Math.floor((terminal.content.historyChunks - 1) / (terminal.linesPerScreen - chunksInInput)); // Minus 1 because zero index
+	terminal.content.clampCurrentPageIndex();
+};
+terminal.content.clampCurrentPageIndex = function(){
+	terminal.content.currentPageIndex = Math.min(Math.max(terminal.content.currentPageIndex, 0), terminal.content.maxCurrentPageIndex);
+};
+terminal.content.incrementCurrentPageIndex = function(){
+	terminal.content.currentPageIndex++;
+	terminal.content.clampCurrentPageIndex();
+};
+terminal.content.decrementCurrentPageIndex = function(){
+	terminal.content.currentPageIndex--;
+	terminal.content.clampCurrentPageIndex();
 };
 terminal.content.pushLine = function(line){
 	terminal.content.lines.push(line);
+	terminal.content.updateHistoryChunks();
 };
 terminal.content.concatLines = function(lines){
 	terminal.content.lines = terminal.content.lines.concat(lines);
+	terminal.content.updateHistoryChunks();
 };
 terminal.content.lines = [
 	'Welcome to the lair of the Fiddlekins.'
@@ -88,14 +118,15 @@ terminal.draw = function(){
 		terminal.ctxGlitchInput.clearRect(0, 0, terminal.canvasGlitchInput.width, terminal.canvasGlitchInput.height);
 
 		var rowIndex = 0;
-		var currentPageStartChunk = terminal.content.currentPageIndex * terminal.linesPerScreen;
+		var chunksInInput = terminal.content.getChunksInLine(terminal.inputController.currentInputString);
+		var currentPageStartChunk = chunksInInput + terminal.content.currentPageIndex * (terminal.linesPerScreen - chunksInInput);
 		var currentOverallChunk = 0;
 
 		// Reverse iteration so that the most recently pushed line is displayed at the bottom
 		for (var lineIndex = terminal.content.lines.length; lineIndex >= 0; lineIndex--) {
 			var isInputLine = lineIndex === terminal.content.lines.length;
 			var line = isInputLine ? terminal.inputController.currentInputString : terminal.content.lines[lineIndex];
-			var chunksInLine = Math.max(Math.ceil(line.length / terminal.charsPerLine), 1);
+			var chunksInLine = terminal.content.getChunksInLine(line);
 
 			for (var chunkIndex = chunksInLine - 1; chunkIndex >= 0; chunkIndex--) {
 				if (isInputLine || currentOverallChunk >= currentPageStartChunk) {

@@ -47,6 +47,7 @@ terminal.inputController.currentInputString = '';
 terminal.inputController.updateCurrentInputString = function(){
 	terminal.inputController.currentInputString = terminal.inputHandler.currentDirectoryString + terminal.inputController.currentInput;
 	terminal.shouldRefreshFavicon = true;
+	terminal.content.updateMaxCurrentPageIndex();
 };
 
 terminal.inputController.ignoreCharcodesOnKeypress = [
@@ -158,12 +159,12 @@ window.addEventListener('keydown', function(e){
 			terminal.inputController.caret.setPosition(terminal.inputController.currentInput.length);
 			break;
 		case 'PageUp':
-			terminal.content.setCurrentPageIndex(terminal.content.currentPageIndex + 1);
+			terminal.content.incrementCurrentPageIndex();
 			terminal.isDirty = true;
 			terminal.shouldRefreshFavicon = true;
 			break;
 		case 'PageDown':
-			terminal.content.setCurrentPageIndex(terminal.content.currentPageIndex - 1);
+			terminal.content.decrementCurrentPageIndex();
 			terminal.isDirty = true;
 			terminal.shouldRefreshFavicon = true;
 			break;

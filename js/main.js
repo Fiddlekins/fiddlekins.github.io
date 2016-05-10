@@ -2,6 +2,7 @@
 
 terminal.setCanvasSize();
 
+terminal.content.updateHistoryChunks();
 terminal.inputHandler.updateCurrentDirectoryString();
 terminal.inputController.updateCurrentInputString();
 
