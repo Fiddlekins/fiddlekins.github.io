@@ -42,6 +42,7 @@ terminal.setCanvasSize = function(){
 
 	terminal.characterWidth = terminal.ctxGlitchInput.measureText(' ').width;
 	terminal.charsPerLine = Math.floor((terminal.canvasOutput.width - terminal.textOffsetX * 2) / terminal.characterWidth);
+	terminal.linesPerScreen = Math.floor((terminal.canvasOutput.height - terminal.textOffsetY) / terminal.fontSize) - 1;
 	terminal.rowHeight = terminal.fontSize;
 
 	terminal.isDirty = true;
@@ -49,6 +50,10 @@ terminal.setCanvasSize = function(){
 window.addEventListener('resize', terminal.setCanvasSize);
 
 terminal.content = {};
+terminal.content.currentPageIndex = 0;
+terminal.content.setCurrentPageIndex = function(value){
+	terminal.content.currentPageIndex = Math.max(value, 0);
+};
 terminal.content.pushLine = function(line){
 	terminal.content.lines.push(line);
 };
@@ -83,25 +88,29 @@ terminal.draw = function(){
 		terminal.ctxGlitchInput.clearRect(0, 0, terminal.canvasGlitchInput.width, terminal.canvasGlitchInput.height);
 
 		var rowIndex = 0;
+		var currentPageStartChunk = terminal.content.currentPageIndex * terminal.linesPerScreen;
+		var currentOverallChunk = 0;
 
 		// Reverse iteration so that the most recently pushed line is displayed at the bottom
 		for (var lineIndex = terminal.content.lines.length; lineIndex >= 0; lineIndex--) {
 			var isInputLine = lineIndex === terminal.content.lines.length;
 			var line = isInputLine ? terminal.inputController.currentInputString : terminal.content.lines[lineIndex];
-			var chunkTotal = Math.max(Math.ceil(line.length / terminal.charsPerLine), 1);
+			var chunksInLine = Math.max(Math.ceil(line.length / terminal.charsPerLine), 1);
 
-			rowIndex += chunkTotal;
-
-			for (var chunkIndex = 0; chunkIndex < chunkTotal; chunkIndex++) {
-				rowIndex--;
-				terminal.ctxGlitchInput.fillText(
-					line.slice(chunkIndex * terminal.charsPerLine, (chunkIndex + 1) * terminal.charsPerLine),
-					terminal.textOffsetX,
-					terminal.canvasGlitchInput.height - ( terminal.textOffsetY + terminal.rowHeight * rowIndex)
-				);
+			for (var chunkIndex = chunksInLine - 1; chunkIndex >= 0; chunkIndex--) {
+				if (isInputLine || currentOverallChunk >= currentPageStartChunk) {
+					terminal.ctxGlitchInput.fillText(
+						line.slice(chunkIndex * terminal.charsPerLine, (chunkIndex + 1) * terminal.charsPerLine),
+						terminal.textOffsetX,
+						terminal.canvasGlitchInput.height - ( terminal.textOffsetY + terminal.rowHeight * rowIndex)
+					);
+					rowIndex++;
+					if (currentOverallChunk >= currentPageStartChunk + terminal.linesPerScreen) {
+						break;
+					}
+				}
+				currentOverallChunk++;
 			}
-
-			rowIndex += chunkTotal;
 		}
 
 		terminal.inputController.caret.draw(terminal.ctxGlitchInput);

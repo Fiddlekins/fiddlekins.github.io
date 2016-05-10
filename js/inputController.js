@@ -50,7 +50,8 @@ terminal.inputController.updateCurrentInputString = function(){
 };
 
 terminal.inputController.ignoreCharcodesOnKeypress = [
-	'Enter'
+	'Enter',
+	'NumpadEnter'
 ];
 
 terminal.inputController.insertIntoString = function(targetString, sourceString, position){
@@ -96,6 +97,7 @@ window.addEventListener('keypress', function(e){
 window.addEventListener('keydown', function(e){
 	var shouldPreventDefault = true;
 	switch (e.code) {
+		case 'NumpadEnter':
 		case 'Enter':
 			terminal.inputController.history.log.push(terminal.inputController.currentInput);
 			terminal.inputController.history.index = -1;
@@ -156,8 +158,14 @@ window.addEventListener('keydown', function(e){
 			terminal.inputController.caret.setPosition(terminal.inputController.currentInput.length);
 			break;
 		case 'PageUp':
+			terminal.content.setCurrentPageIndex(terminal.content.currentPageIndex + 1);
+			terminal.isDirty = true;
+			terminal.shouldRefreshFavicon = true;
 			break;
 		case 'PageDown':
+			terminal.content.setCurrentPageIndex(terminal.content.currentPageIndex - 1);
+			terminal.isDirty = true;
+			terminal.shouldRefreshFavicon = true;
 			break;
 		default:
 			shouldPreventDefault = false;
