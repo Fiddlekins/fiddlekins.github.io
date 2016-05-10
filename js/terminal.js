@@ -56,6 +56,7 @@ terminal.content = {};
 terminal.content.currentPageIndex = 0;
 terminal.content.historyChunks = 0;
 terminal.content.maxCurrentPageIndex = 0;
+terminal.content.previousLastDisplayedChunk = 0;
 terminal.content.getChunksInLine = function(lineString){
 	return Math.max(Math.ceil(lineString.length / terminal.charsPerLine), 1);
 };
@@ -69,10 +70,18 @@ terminal.content.updateHistoryChunks = function(){
 terminal.content.updateMaxCurrentPageIndex = function(){
 	var chunksInInput = terminal.content.getChunksInLine(terminal.inputController.currentInputString);
 	terminal.content.maxCurrentPageIndex = Math.floor((terminal.content.historyChunks - 1) / (terminal.linesPerScreen - chunksInInput)); // Minus 1 because zero index
+	// Work out what the currentPageIndex needs to change to in order to display the same part of the history
+	terminal.content.currentPageIndex = Math.floor(terminal.content.previousLastDisplayedChunk / (terminal.linesPerScreen - chunksInInput));
+	// If this works out to an invalid value default to the max, because it's likely cause by trying to divide by zero due to input filling screen
+	if (!terminal.content.currentPageIndex && terminal.content.currentPageIndex !== 0) {
+		terminal.content.currentPageIndex = terminal.content.maxCurrentPageIndex;
+	}
 	terminal.content.clampCurrentPageIndex();
 };
 terminal.content.clampCurrentPageIndex = function(){
 	terminal.content.currentPageIndex = Math.min(Math.max(terminal.content.currentPageIndex, 0), terminal.content.maxCurrentPageIndex);
+	var chunksInInput = terminal.content.getChunksInLine(terminal.inputController.currentInputString);
+	terminal.content.previousLastDisplayedChunk = terminal.content.currentPageIndex * (terminal.linesPerScreen - chunksInInput);
 };
 terminal.content.incrementCurrentPageIndex = function(){
 	terminal.content.currentPageIndex++;
