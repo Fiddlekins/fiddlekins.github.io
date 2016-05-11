@@ -76,7 +76,7 @@ terminal.inputHandler.autoComplete = function(){
 	}
 	var inputFilePath = input.split('/');
 	var inputToMatch = inputFilePath.pop();
-	var initialPath = inputFilePath.length ? inputFilePath.join('/') : '.';
+	var initialPath = inputFilePath.length ? inputFilePath.join('/') + '/' : '';
 	var resolvedPath = terminal.inputHandler.currentDirectory.changeDirectory(inputFilePath.reverse());
 	if (typeof resolvedPath === 'string') {
 		return;
@@ -96,7 +96,7 @@ terminal.inputHandler.autoComplete = function(){
 	}
 	var lastAutoCompleteSelectedIndex = validOptions.indexOf(terminal.inputHandler.lastAutoCompleteSelectedItem);
 	terminal.inputHandler.lastAutoCompleteSelectedItem = validOptions[(lastAutoCompleteSelectedIndex + 1) % validOptions.length];
-	terminal.inputController.currentInput = (commandMatch ? commandMatch[1] + commandMatch[2] : '') + initialPath + '/' + terminal.inputHandler.lastAutoCompleteSelectedItem;
+	terminal.inputController.currentInput = (commandMatch ? commandMatch[1] + commandMatch[2] : '') + initialPath + terminal.inputHandler.lastAutoCompleteSelectedItem;
 	terminal.inputController.updateCurrentInputString();
 	terminal.inputController.caret.setPosition(terminal.inputController.currentInput.length);
 	terminal.isDirty = true;
