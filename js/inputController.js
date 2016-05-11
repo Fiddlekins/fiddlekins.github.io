@@ -71,6 +71,7 @@ terminal.inputController.currentInputInsert = function(string){
 	);
 	terminal.inputController.caret.position++;
 	terminal.inputController.updateCurrentInputString();
+	terminal.inputHandler.updateLastUserTypedInput();
 };
 
 terminal.inputController.currentInputRemoveChar = function(position){
@@ -80,6 +81,7 @@ terminal.inputController.currentInputRemoveChar = function(position){
 		1
 	);
 	terminal.inputController.updateCurrentInputString();
+	terminal.inputHandler.updateLastUserTypedInput();
 };
 
 terminal.inputController.history = {};
@@ -107,6 +109,7 @@ window.addEventListener('keydown', function(e){
 			terminal.inputController.caret.setPosition(0);
 			terminal.isDirty = true;
 			terminal.inputController.updateCurrentInputString();
+			terminal.inputHandler.updateLastUserTypedInput();
 			break;
 		case 'Backspace':
 			if (terminal.inputController.caret.position > 0) {
@@ -175,6 +178,9 @@ window.addEventListener('keydown', function(e){
 			}
 			terminal.isDirty = true;
 			terminal.shouldRefreshFavicon = true;
+			break;
+		case 'Tab':
+			terminal.inputHandler.autoComplete();
 			break;
 		default:
 			shouldPreventDefault = false;
