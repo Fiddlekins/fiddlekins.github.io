@@ -22,7 +22,7 @@
 				return this.changeDirectory(targetDirectoryArray);
 			case '..':
 				if (this._parent === undefined) {
-					return this;
+					return this.changeDirectory(targetDirectoryArray);
 				}
 				return this._parent.changeDirectory(targetDirectoryArray);
 		}
