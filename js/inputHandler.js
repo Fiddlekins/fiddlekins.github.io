@@ -71,6 +71,9 @@ terminal.inputHandler.updateLastUserTypedInput = function(){
 terminal.inputHandler.autoComplete = function(){
 	var commandMatch = terminal.inputHandler.lastUserTypedInput.match(/^([^ ]+)( +)(.*)/);
 	var input = commandMatch ? commandMatch[3] : terminal.inputHandler.lastUserTypedInput;
+	if (input === '~'){
+		return;
+	}
 	var inputFilePath = input.split('/');
 	var inputToMatch = inputFilePath.pop();
 	var initialPath = inputFilePath.length ? inputFilePath.join('/') : '.';
