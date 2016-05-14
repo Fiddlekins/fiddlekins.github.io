@@ -118,11 +118,19 @@ window.addEventListener('keydown', function(e){
 			}
 			break;
 		case 'ArrowLeft':
-			terminal.inputController.caret.setPosition(terminal.inputController.caret.position - 1);
+			if (e.ctrlKey) {
+				terminal.inputController.ctrlArrowLeft();
+			} else {
+				terminal.inputController.caret.setPosition(terminal.inputController.caret.position - 1);
+			}
 			terminal.inputController.caret.setBlinkOn();
 			break;
 		case 'ArrowRight':
-			terminal.inputController.caret.setPosition(terminal.inputController.caret.position + 1);
+			if (e.ctrlKey) {
+				terminal.inputController.ctrlArrowRight();
+			} else {
+				terminal.inputController.caret.setPosition(terminal.inputController.caret.position + 1);
+			}
 			terminal.inputController.caret.setBlinkOn();
 			break;
 		case 'ArrowDown':
@@ -189,3 +197,53 @@ window.addEventListener('keydown', function(e){
 		e.preventDefault();
 	}
 });
+
+terminal.inputController.ctrlArrowLeft = function(){
+	var wordRegex = /\w/;
+	var whitespaceRegex = /\s/;
+	var startCharIsWord = wordRegex.test(terminal.inputController.currentInput.charAt(terminal.inputController.caret.position - 1));
+	var startCharIsWhitespace = whitespaceRegex.test(terminal.inputController.currentInput.charAt(terminal.inputController.caret.position - 1));
+	for (var charIndex = terminal.inputController.caret.position - 1; charIndex >= 0; charIndex--) {
+		var charIsWord = wordRegex.test(terminal.inputController.currentInput.charAt(charIndex));
+		var charIsWhitespace = whitespaceRegex.test(terminal.inputController.currentInput.charAt(charIndex));
+		if (
+			(startCharIsWord && !charIsWord) ||
+			(startCharIsWhitespace && !charIsWhitespace) ||
+			((!startCharIsWord && !startCharIsWhitespace) && ( charIsWord || charIsWhitespace))
+		) {
+			if (startCharIsWhitespace && terminal.inputController.caret.position - charIndex <= 2) {
+				startCharIsWhitespace = false;
+				startCharIsWord = charIsWord;
+			} else {
+				terminal.inputController.caret.setPosition(charIndex + 1);
+				return;
+			}
+		}
+	}
+	terminal.inputController.caret.setPosition(0);
+};
+
+terminal.inputController.ctrlArrowRight = function(){
+	var wordRegex = /\w/;
+	var whitespaceRegex = /\s/;
+	var startCharIsWord = wordRegex.test(terminal.inputController.currentInput.charAt(terminal.inputController.caret.position));
+	var startCharIsWhitespace = whitespaceRegex.test(terminal.inputController.currentInput.charAt(terminal.inputController.caret.position));
+	for (var charIndex = terminal.inputController.caret.position + 1; charIndex < terminal.inputController.currentInput.length; charIndex++) {
+		var charIsWord = wordRegex.test(terminal.inputController.currentInput.charAt(charIndex));
+		var charIsWhitespace = whitespaceRegex.test(terminal.inputController.currentInput.charAt(charIndex));
+		if (
+			(startCharIsWord && !charIsWord) ||
+			(startCharIsWhitespace && !charIsWhitespace) ||
+			((!startCharIsWord && !startCharIsWhitespace) && ( charIsWord || charIsWhitespace))
+		) {
+			if (startCharIsWhitespace && charIndex - terminal.inputController.caret.position <= 1) {
+				startCharIsWhitespace = false;
+				startCharIsWord = charIsWord;
+			} else {
+				terminal.inputController.caret.setPosition(charIndex);
+				return;
+			}
+		}
+	}
+	terminal.inputController.caret.setPosition(terminal.inputController.currentInput.length);
+};
