@@ -47,11 +47,16 @@ terminal.inputHandler.process = function(string){
 	} else {
 		var targetDirectory = string.trim().split('/');
 		var targetFile = targetDirectory.pop();
-		var output = (targetDirectory.length ? terminal.inputHandler.currentDirectory.changeDirectory(targetDirectory.reverse()) : terminal.inputHandler.currentDirectory).execute(targetFile);
+		var output = targetDirectory.length ? terminal.inputHandler.currentDirectory.changeDirectory(targetDirectory.reverse()) : terminal.inputHandler.currentDirectory;
 		if (typeof output === 'string') {
 			terminal.content.pushLine(output);
 		} else {
-			terminal.content.concatLines(output);
+			output = output.execute(targetFile);
+			if (typeof output === 'string') {
+				terminal.content.pushLine(output);
+			} else {
+				terminal.content.concatLines(output);
+			}
 		}
 	}
 };
